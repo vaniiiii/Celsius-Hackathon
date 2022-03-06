@@ -1,0 +1,85 @@
+---
+	import Boilerplate from "@layouts/Boilerplate.astro";
+    import LogIn from "../components/Connect.svelte";
+---
+
+<Boilerplate>
+    <title slot="head">Log in</title>
+
+    <div class="wrapper">
+        <div class="form">
+            <h1>Connect to Metamask</h1>
+            <LogIn client:load><span class="login">Connect</span></LogIn>
+            <!-- <p>You don't have an account? <a href="/register"> Register here!</a></p> -->
+        </div>
+    </div>
+</Boilerplate>
+
+<style lang="scss">
+	@use "../scss" as imports;
+
+    h1 {
+        margin-bottom: 16px;
+    }
+
+    .form {
+        display: flex;
+        flex-direction: column;
+        max-width: 500px;
+        width: calc(100vw - imports.$sidebar-closed-width - 32px);
+        background-color: imports.$card-bg-color;
+        color: imports.$card-color;
+        padding: 32px;
+        gap:8px;
+        border-radius: imports.$border-radius;
+
+        a {
+            color: imports.$alt-color-dark;
+
+            &:hover {
+                color: lighten(imports.$alt-color-dark, 20%);
+            }
+        }
+    }
+
+    label {
+        font-size: 1.5em;
+    }
+
+    input {
+        color: imports.$card-color;
+        font-size: 1.3em;
+        padding: .2em;
+        border-bottom: imports.$card-color .1em solid;
+        transition: border .2s ease-out;
+        margin-bottom: 8px;
+
+        &:hover {
+            border-bottom: darken(imports.$alt-color, 10%) .1em solid;
+        }
+
+        &:focus {
+            border-bottom: darken(imports.$alt-color, 20%) .1em solid;
+        }
+    }
+
+    .login {
+        background-color: imports.$alt-color-dark;
+        color: imports.$fg-color;
+        font-size: 1.5rem;
+        padding: .75rem;
+        align-self: flex-end;
+        border-radius: .2em;
+
+        &:hover {
+            background-color: lighten(imports.$alt-color-dark, 10%);
+        }
+    }
+
+    .wrapper {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-content: center;
+    }
+</style>

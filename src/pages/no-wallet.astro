@@ -1,0 +1,60 @@
+---
+	import Footer from "../layouts/Footer.astro";
+	import "../styles/reset.css"
+	import { Markdown } from "astro/components";
+---
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=League+Spartan&family=Raleway:wght@700&display=swap" rel="stylesheet">
+	</head>
+	<body>
+		<div class="main-wrapper">
+			<main>
+				<Markdown>
+					# Please install Metamask
+				</Markdown>
+			</main>
+			<Footer />
+		</div>
+	</body>
+</html>
+
+<script>
+	const hasWallet = typeof window.ethereum !== "undefined";
+
+	if(hasWallet) {
+		window.location.assign("/");
+	}
+</script>
+
+<style lang="scss">
+	@use "../scss" as imports;
+
+	main {
+		padding: 16px;
+		min-height: 100vh;
+		position: relative;
+	}
+
+	body {
+		background: imports.$bg-color;
+		color: imports.$fg-color;
+	}
+
+	.main-wrapper {
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+		position: relative;
+		width: 100%;
+	}
+</style>

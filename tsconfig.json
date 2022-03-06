@@ -1,0 +1,15 @@
+{
+  "include": ["src/**/*"],
+  "compilerOptions": {
+    "lib": [ "ESNext" ],
+    "baseUrl": ".",
+    "paths": {
+      "@layouts/*": ["src/layouts/*"],
+      "@components/*": ["src/components/*"],
+      "@stores/*": ["src/stores/*"],
+      "@requests/*": ["src/requests/*"],
+    },
+		"resolveJsonModule": true,
+    "esModuleInterop": true,
+  }
+}

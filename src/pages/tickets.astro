@@ -1,0 +1,9 @@
+---
+	import Boilerplate from "@layouts/Boilerplate.astro";
+	import Tickets from "../components/pages/Tickets.svelte";
+---
+
+<Boilerplate>
+	<title slot="head">My Tickets</title>
+    <Tickets client:idle />
+</Boilerplate>

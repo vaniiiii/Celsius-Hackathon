@@ -1,0 +1,78 @@
+---
+	import Boilerplate from "@layouts/Boilerplate.astro";
+	import { Markdown } from "astro/components";
+
+	const title = "Celsius social hub";
+---
+
+<Boilerplate>
+	<title slot="head">{ title }</title>
+
+	<div class="page">
+		<div class="wrapper">
+			<Markdown>
+				# { title }
+
+				Create and customize your avatar, buy tickets, trade and lend NFT's, all in one place!
+
+				As a mechanism, NFT's make it possible to assign value to digital art, which opens the door to a sea of possibilty for a medium that is unbridled by physical limitations
+			</Markdown>
+		</div>
+		<img src="/images/social.svg" alt="Social club">
+	</div>
+	<div class="page">
+		<div class="wrapper">
+			<Markdown>
+			## Customize your avatar
+
+			Make your profile avatar the way you want to. Combining NFT's, you can customize your own character, giving you enhanced experience on Celsius Hub platform.
+			</Markdown>
+		</div>
+		<img src="/images/avatar.svg" alt="Social club">
+	</div>
+	<div class="page">
+		<div class="wrapper">
+			<Markdown>
+				## Buy tickets
+
+				Blockchain techonology makes buying and using tickets more easier and secure. Our tickets allow you to travel, but also to visit various entertaining and cultural manifestations
+			</Markdown>
+
+		</div>
+		<img src="/images/ticketss.svg" alt="Social club">
+	</div>
+	<div class="page">
+		<div class="wrapper">
+			<Markdown>
+				## Lend and loan NFT's
+
+				Use our platform to have more control over your assets. You can borrow NFT's for some purpose or even lend someone your own asset for collateral
+			</Markdown>
+		</div>
+		<img src="/images/lend.svg" alt="Social club">
+	</div>
+</Boilerplate>
+
+<style lang="scss">
+	@use "../scss" as imports;
+	.page {
+		@include imports.page;
+
+		a {
+			@include imports.call-to-action;
+		}
+
+		button.secondary {
+			@include imports.call-to-action-secondary;
+		}
+
+		.wrapper {
+			left: 32px;
+		}
+
+		img {
+			right: 0;
+			padding-right: 5%;
+		}
+	}
+</style>

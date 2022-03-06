@@ -1,0 +1,10 @@
+---
+	import Boilerplate from "@layouts/Boilerplate.astro";
+	import Account from "@components/pages/Account.svelte";
+	// import { Markdown } from "astro/components";
+---
+
+<Boilerplate>
+	<title slot="head">Title</title>
+	<Account client:load></Account>
+</Boilerplate>

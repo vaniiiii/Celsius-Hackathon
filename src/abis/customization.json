@@ -1,0 +1,64 @@
+[
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_ca0",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_tokenId0",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "_ca1",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_tokenId1",
+                "type": "uint256"
+            }
+        ],
+        "name": "setAssets",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "userAssets",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "ca0",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "ca1",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "tokenId0",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "tokenId1",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]

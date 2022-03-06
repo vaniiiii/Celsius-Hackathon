@@ -1,0 +1,9 @@
+---
+	import Boilerplate from "@layouts/Boilerplate.astro";
+	import Explore from "../components/pages/Explore.svelte";
+---
+
+<Boilerplate>
+	<title slot="head">Explore</title>
+    <Explore client:idle />
+</Boilerplate>

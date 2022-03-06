@@ -1,0 +1,128 @@
+---
+	import Boilerplate from "@layouts/Boilerplate.astro";
+
+    interface me {
+        img: string
+        name: string,
+        age: number,
+        about: string
+    }
+
+    let us: me[] = [
+        {
+            img: "https://picsum.photos/seed/1/1200/800",
+            name: "Ivan Džambasanović",
+            age: 24,
+            about: "Attended School of Electrical Engineering, department of electronics. As a crypto entusiast, I love spending time learning about this new exciting world which I hope will play a large role in our current economy. Currently working as a analog designer engineer, and spending free time on exploring NFT opportunities."
+        },
+        {
+            img: "https://picsum.photos/seed/2/1200/800",
+            name: "Petar Radojević",
+            age: 19,
+            about: "Hi, I'm Petar Radojevic, full-stack developer. I am also Mathematical Faculty student in University of Belgrade. I alwayes loved programming, and web design is some skill I work on for a long time. Blockchain technology is pretty new to me, so I find it interesting how much potential there is in some of the technologies that decentralized ecosystem brings, like for example IPFS."
+        },
+        {
+            img: "https://picsum.photos/seed/3/1200/800",
+            name: "Branislav Grbić",
+            age: 20,
+            about: "Second year student of Mathematical Faculty (informatics department) and Machine Learning intern in Microsoft Development Center Serbia. I always loved algorithms and data structures the most out of the programming world, but also find Machine Learning and math especially interesting. This hackathon makes quite a challenge for me, because I never do web development, but I'm always looking for battle against my procrastination :)"
+        }
+    ]
+---
+
+<Boilerplate>
+    <title slot="head">About us</title>
+    <div class="wrapper">
+        <h1>About us</h1>
+        {
+            us.map( me => (
+                <div class="card">
+                    <img src={me.img} alt={me.name}>
+                    <div class="about">
+                        <h2>{me.name}</h2>
+                        <p>Age: {me.age}</p>
+                        <br>
+                        <p>About: {me.about}</p>
+                    </div>
+                </div>
+            ))
+        }
+    </div>
+</Boilerplate>
+
+<style lang="scss">
+    @use "../scss" as imports;
+
+    @keyframes img-hover {
+        from {
+            filter: hue-rotate(0deg) saturate(100%);
+        }
+
+        50% {
+            filter: hue-rotate(180deg) saturate(50%);
+        }
+
+        to {
+            filter: hue-rotate(360deg) saturate(100%);
+        }
+    }
+
+    .wrapper {
+        height: 100%;
+        display: grid;
+        gap: 16px;
+        grid-template-rows: min-content 1fr;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-areas: 
+        "title title title"
+        "m1    m2    m3";
+
+        h1 {
+            grid-area: title;
+        }
+
+        @for $i from 1 to 5 {
+            div:nth-child(#{$i + 1}) {
+                grid-area: m#{$i};
+            }
+        }
+
+        .card {
+            background-color: imports.$bg-color-alt;
+            border-radius: 2 * imports.$border-radius;
+            overflow: hidden;
+            transition: all .2s ease-in-out;
+            
+            img {
+                width: 100%;
+                aspect-ratio: 3/2;
+                object-fit: cover;
+                border-radius: 2 * imports.$border-radius; 
+            }
+
+            .about {
+                padding: 16px;
+            }
+
+            &:hover {
+                transform: scale(1.02);
+
+                img {
+                    animation: img-hover .5s forwards ease-in-out;
+                }
+            }
+        }
+    }
+
+    @media screen and (max-width: 800px) {
+        .wrapper {
+            grid-template-rows: min-content repeat(3, 1fr);
+            grid-template-columns: 1fr;
+            grid-template-areas: 
+            "title"
+            "m1"
+            "m2"
+            "m3";
+        }
+    }
+</style>

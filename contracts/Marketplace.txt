@@ -1,0 +1,200 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+
+
+
+contract MarketPlace is IERC721Receiver, ReentrancyGuard, Ownable {
+
+  event NewSellOffer(address indexed token, uint256 indexed id, uint256 indexed price, address seller, uint256 timestamp);
+  event SellOfferCanceled(address ca, uint256 id, uint256 timestamp);
+  event NewBuyOffer(address indexed token, uint256 indexed id, uint256 indexed bidAmount, address buyer, uint256 timestamp);
+  event BuyOfferCancelled(address indexed token, uint256 indexed id, uint256 indexed bidAmount, address buyer, uint256 timestamp);
+  event NFTPurchased(address indexed oldOwner, address indexed newOwner, uint256 indexed price, address collection, uint256 tokenId);
+
+  struct sellOffer {
+    uint256 price;
+    uint256 timestamp;
+    uint256 tokenId;
+    address seller;
+    bool accepted;
+  }
+
+  struct Offer {
+    uint256 bidAmount;
+    uint256 timestamp;
+    address buyer;
+    bool accepted;
+  }
+
+
+  mapping(address => mapping(uint256 => sellOffer[])) sellOffers;
+  mapping(address => mapping(uint256 => Offer[])) buyOffers;
+  mapping(address => uint256) bidAmounts;
+  mapping(address => mapping(uint256 => address)) currentOwner;
+
+  // Required in order to receive ERC 721's.
+  function onERC721Received(address, address, uint256, bytes memory) public virtual override returns (bytes4) {
+    return this.onERC721Received.selector;
+  }
+
+  // Required in order to receive ETH
+  receive() external payable { }
+
+  // Create Sell Offer for your NFT
+  function createSellOffer(address ca, uint256 tokenId, uint256 price) public nonReentrant {
+    require(msg.sender == IERC721(ca).ownerOf(tokenId), "Only the owner of a token can list it.");
+    require(price > 0, "Price can't be zero");
+    currentOwner[ca][tokenId] = msg.sender;
+    IERC721(ca).transferFrom(msg.sender, address(this), tokenId); // transfer NFT to marketplace
+    sellOffers[ca][tokenId].push(sellOffer(price, block.timestamp, tokenId, msg.sender, false));
+    emit NewSellOffer(ca, tokenId, price, msg.sender, block.timestamp);
+  }
+
+  // Cancel your Sell Offer
+  function cancelSellOffer(address ca, uint256 tokenId) public nonReentrant {
+    require(isOnSale(ca,tokenId), "NFT is not on sale");
+    uint256 index = sellOffers[ca][tokenId].length;
+    require(msg.sender == sellOffers[ca][tokenId][index - 1].seller, "Only seller can cancel offer");
+    IERC721(ca).transferFrom(address(this), msg.sender, tokenId); // transfer NFT to seller
+    sellOffers[ca][tokenId].push(sellOffer(0, block.timestamp, tokenId, address(0), false));
+
+    require(IERC721(ca).ownerOf(tokenId) == msg.sender, "NFT was not successfully transferred.");
+    emit SellOfferCanceled(ca, tokenId, block.timestamp);
+  }
+
+
+  function purchaseNFT(address ca, uint256 tokenId) public payable nonReentrant{
+    require(isOnSale(ca,tokenId), "NFT is not on sale");
+    uint256 price = getNFTPrice(ca,tokenId);
+    address _oldOwner = currentOwner[ca][tokenId];
+    require(msg.value >= price , "Smaller amount than required has been sent");
+    IERC721(ca).transferFrom(address(this), msg.sender, tokenId); // transfer NFT to buyer
+    payable(_oldOwner).transfer(price); // send funds to seller
+    // update current owner
+    currentOwner[ca][tokenId] = msg.sender;
+    // update accepted value
+    sellOffer memory lastOffer = getLastSellOffer(ca,tokenId);
+    lastOffer.accepted = true;
+    uint256 index = sellOffers[ca][tokenId].length;
+    sellOffers[ca][tokenId][index-1] = lastOffer;
+    sellOffers[ca][tokenId].push(sellOffer(0, block.timestamp, tokenId, address(0), false));
+    emit NFTPurchased(_oldOwner, msg.sender, price, ca, tokenId);
+  }
+
+  function createBuyOffer(address ca, uint256 tokenId, uint256 bidAmount) public payable nonReentrant{
+    if(isOnSale(ca,tokenId)){
+      require(currentOwner[ca][tokenId] != msg.sender, "Owner can't bid on own NFT");
+    }
+    else{
+      require(IERC721(ca).ownerOf(tokenId) != msg.sender, "Owner can't bid on own NFT");
+    }
+    require(bidAmount > 0 , "Bid amount must be greater than zero");
+    require(msg.value >= bidAmount, "Bid amount must be sent to contract");
+    buyOffers[ca][tokenId].push(Offer(bidAmount, block.timestamp, msg.sender, false));
+    bidAmounts[msg.sender] += msg.value;
+    emit NewBuyOffer(ca, tokenId, msg.value, msg.sender, block.timestamp);
+  }
+
+  function cancelBuyOffer(address ca, uint256 tokenId, uint256 bidAmount) public payable nonReentrant{
+    Offer[] storage _buyOffers = _getBuyOffers(ca,tokenId);
+    for (uint i = 0; i < _buyOffers.length; i++){
+      if(_buyOffers[i].buyer == msg.sender
+       && _buyOffers[i].bidAmount == bidAmount
+       && _buyOffers[i].accepted == false){
+        payable(msg.sender).transfer(bidAmount);
+        bidAmounts[msg.sender] -= bidAmount;
+        delete(_buyOffers[i]);
+        emit BuyOfferCancelled(ca, tokenId, bidAmount, msg.sender, block.timestamp);
+        return;
+      }
+    }
+    revert("No buy offer found");
+  }
+
+  function acceptBuyOffer(address ca, uint256 tokenId, uint256 bidAmount, address buyer) public payable nonReentrant{
+    require(msg.sender == IERC721(ca).ownerOf(tokenId), "Only the owner of a token can accept offer.");
+    bool _isOnSale = isOnSale(ca,tokenId);
+    if(!_isOnSale){
+      require(IERC721(ca).isApprovedForAll(msg.sender, address(this)), "Marketplace not approved to transfer this NFT.");
+    }
+    Offer[] storage _buyOffers = _getBuyOffers(ca,tokenId);
+    bool flag = false;
+    uint256 index = 0;
+    for (uint i = 0; i < _buyOffers.length; i++){
+      if(_buyOffers[i].bidAmount == bidAmount
+        && _buyOffers[i].buyer == buyer
+        && _buyOffers[i].accepted == false
+      )
+      {
+        flag = true;
+        index = i;
+        break;
+      }
+    }
+    require(flag == true, "No buy offer found");
+    // need to check if NFT is on sale
+
+    // if it's not, NFT should be transfered directly from msg.sender
+    if(!_isOnSale){
+      IERC721(ca).transferFrom(msg.sender,buyer,tokenId);
+    }
+    // otherwise, NFT should be transfered from contract
+    else{
+      IERC721(ca).transferFrom(address(this), buyer, tokenId);
+      sellOffers[ca][tokenId].push(sellOffer(0, block.timestamp, tokenId, address(0), false));
+    }
+    payable(msg.sender).transfer(bidAmount);
+    bidAmounts[buyer] -= bidAmount;
+    currentOwner[ca][tokenId] = buyer;
+    delete(_buyOffers[index]);
+    emit NFTPurchased(msg.sender, buyer, bidAmount, ca, tokenId);
+  }
+
+
+
+
+  // Helper Functions
+
+  // Get Last Sell Offer
+  function getLastSellOffer(address ca, uint256 tokenId) public view returns (sellOffer memory){
+    uint256 index = sellOffers[ca][tokenId].length;
+    require(index > 0, 'No sell offer for this token.');
+    return sellOffers[ca][tokenId][index-1];
+  }
+
+  // Check if NFT is on sale
+  function isOnSale(address ca, uint256 tokenId) public view returns (bool) {
+    uint256 index = sellOffers[ca][tokenId].length;
+    if (index == 0) {
+      return false;
+    }
+    return sellOffers[ca][tokenId][index - 1].price != 0;
+  }
+
+  // Get NFT price
+  function getNFTPrice(address ca , uint256 tokenId) public view returns(uint256) {
+    uint256 index = sellOffers[ca][tokenId].length;
+    return sellOffers[ca][tokenId][index - 1].price;
+  }
+
+  // Get Buy Offers internal (storage vs memory)
+  function _getBuyOffers(address ca, uint256 tokenId) internal view returns (Offer[] storage) {
+    return buyOffers[ca][tokenId];
+  }
+
+  // Get Buy Offers external
+  function getBuyOffers(address ca, uint256 tokenId) public view returns (Offer[] memory) {
+    return buyOffers[ca][tokenId];
+  }
+  // Get Sell Offers
+  function getSellOffers(address ca, uint256 tokenId) public view returns (sellOffer[] memory) {
+    return sellOffers[ca][tokenId];
+  }
+
+
+}

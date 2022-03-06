@@ -1,0 +1,73 @@
+---
+import Navigation from "./Navigation.astro";
+import Footer from "./Footer.astro";
+import "../styles/reset.css"
+---
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=League+Spartan&family=Raleway:wght@700&display=swap" rel="stylesheet">
+
+		<script src='https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js'></script>
+
+		<slot name="head"/>
+	</head>
+	<body>
+		<Navigation />
+		<div class="main-wrapper">
+			<main>
+				<slot />
+			</main>
+			<Footer />
+		</div>
+	</body>
+</html>
+
+<script type="module" hoist>
+	import { is_connected } from "../requests/user";
+	import { load_web3 } from "../libs/web3";
+
+	window.is_connected = is_connected;
+
+
+	const hasWallet = typeof window.ethereum !== "undefined";
+
+	if(!hasWallet) {	
+		window.location.assign("/no-wallet");
+	}
+
+	is_connected();
+
+	load_web3();
+</script>
+<style lang="scss">
+	@use "../scss" as imports;
+
+	main {
+		padding: 16px;
+		min-height: 100vh;
+		position: relative;
+	}
+
+	body {
+		background: imports.$bg-color;
+		color: imports.$fg-color;
+	}
+
+	.main-wrapper {
+		margin-left: imports.$sidebar-closed-width;
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+		position: relative;
+		width: calc(100% - imports.$sidebar-closed-width);
+	}
+</style>

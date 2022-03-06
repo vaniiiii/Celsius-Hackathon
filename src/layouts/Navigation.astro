@@ -1,0 +1,163 @@
+---
+import Connected from "../components/Connected.svelte";
+import NotConnected from "../components/NotConnected.svelte";
+
+enum ListItemType {
+  Link,
+  Spacer
+}
+
+interface NavLink {
+  type?: ListItemType
+  icon?: string,
+  link?: string,
+  text?: string
+}
+
+let links:NavLink[] = [
+  {
+    icon: "/icons/home.svg",
+    link: "/",
+    text: "Home"
+  },
+  {
+    icon: "/icons/explore.svg",
+    link: "/explore",
+    text: "Explore"
+  },
+  {
+    icon: "/icons/about.svg",
+    link: "/about-us",
+    text: "About us" 
+  },
+
+  
+  {
+    type: ListItemType.Spacer,
+  },
+
+  {
+    icon: "/icons/loyalty.svg",
+    link: "/tickets",
+    text: "Tickets" 
+  },
+  {
+    icon: "/icons/category.svg",
+    link: "/items",
+    text: "Items" 
+  }
+]
+---
+
+<nav>
+    <ul>
+      {links.map(({type, icon, link, text}) =>
+          (typeof(type) != undefined && type == ListItemType.Spacer)?
+          <li class="spacer"></li> :
+          <li>
+            <a href={link}>
+              <img alt={text} src={icon} class="icon">
+              {text}
+            </a>
+          </li>
+        )
+      }
+
+      <Connected client:load>
+        <li>
+          <a href="/me">
+            <img alt="My account" src="/icons/account.svg" class="icon">
+            My Account
+          </a>
+        </li>
+      </Connected>
+
+      <NotConnected client:load>
+        <li>
+          <a href="/connect">
+            <img alt="Connect" src="/icons/login.svg" class="icon">
+            Connect
+          </a>
+        </li>
+      </NotConnected>
+    </ul>
+</nav>
+
+<style lang="scss">
+  @use "../scss" as imports;
+  
+  nav {
+    position: fixed;
+    background-color: imports.$bg-color-alt;
+    padding: 16px 0;
+    width: imports.$sidebar-closed-width;
+    white-space: nowrap;
+    overflow: hidden;
+    height: 100%;
+    z-index: 10;
+    transition: width ease-in .2s;
+
+    &:hover {
+      width: imports.$sidebar-opened-width;
+    }
+
+    ul {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    li {
+      list-style: none;
+      font-size: 1.4rem;
+
+      &.spacer {
+        flex-grow: 1;
+      }
+
+      &:not(.spacer):hover {
+        background-color: imports.$bg-color;
+      }
+
+      a {
+        display: flex;
+        align-items: center;
+        color: imports.$fg-color;
+        padding: 16px;
+        text-decoration: none;
+      }
+    }
+
+    &::before {
+      content: '';
+      background-color: black;
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .2s ease-in-out;
+    }
+
+    &:hover::before {
+      opacity: .4;
+    }
+
+    &::after {
+      content: '';
+      background-color: inherit;
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      width: inherit;
+      pointer-events: none;
+    }
+  }
+
+  .icon {
+    display: inline;
+    width: 32px;
+    height: 32px;
+    margin-right: 16px;
+  }
+</style>

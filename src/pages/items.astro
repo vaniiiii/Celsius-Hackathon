@@ -1,0 +1,9 @@
+---
+	import Boilerplate from "@layouts/Boilerplate.astro";
+	import UserItems from "../components/pages/UserItems.svelte";
+---
+
+<Boilerplate>
+	<title slot="head">My Items</title>
+    <UserItems client:idle />
+</Boilerplate>
